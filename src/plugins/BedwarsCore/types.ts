@@ -7,7 +7,7 @@ export interface Generator {
 }
 
 export interface Shopkeeper {
-	shopId: string;
+	shop: ShopId;
 	position: Vector3;
 }
 
@@ -22,3 +22,5 @@ export interface Item {
 	Slot: number;
 	[key: string]: unknown; // Allow additional properties
 }
+
+export type ShopId = string;

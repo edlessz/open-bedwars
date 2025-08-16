@@ -14,7 +14,7 @@ if (namespace) {
 
 	const core = datapack.usePlugin(BedwarsCore);
 
-	core.addShop("test", {
+	const testShop = core.addShop({
 		items: [{ Slot: 0, id: "minecraft:stone", Count: 64 }],
 		name: "Test Shop 2",
 	});
@@ -26,7 +26,7 @@ if (namespace) {
 	});
 
 	core.addShopkeeper({
-		shopId: "test",
+		shop: testShop,
 		position: { x: 241, y: -60, z: 10 },
 	});
 

@@ -1,8 +1,9 @@
+import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import path from "node:path";
 import BedwarsPlugin from "../../BedwarsPlugin";
 import { getPosition, log, secondsToTicks } from "../../utils";
-import type { Generator, Shop, Shopkeeper } from "./types";
+import type { Generator, Shop, ShopId, Shopkeeper } from "./types";
 
 export default class BedwarsCore extends BedwarsPlugin {
 	private generators: Generator[] = [];
@@ -15,11 +16,11 @@ export default class BedwarsCore extends BedwarsPlugin {
 		this.shopkeepers.push(shopkeeper);
 	}
 
-	private shops: Record<string, Shop> = {};
-	public addShop(shopId: string, shop: Shop) {
-		if (this.shops[shopId])
-			log(`Shop ${shopId} already exists, overwriting.`, "⚠️");
+	private shops: Record<ShopId, Shop> = {};
+	public addShop(shop: Shop): ShopId {
+		const shopId = crypto.randomUUID();
 		this.shops[shopId] = shop;
+		return shopId;
 	}
 
 	public onBuild(datapackPath: string): boolean {
@@ -62,7 +63,7 @@ export default class BedwarsCore extends BedwarsPlugin {
 			),
 			...this.shopkeepers.flatMap((shop) => [
 				`summon villager ${getPosition(shop.position)} {Tags:["${this.namespace}","${this.namespace}_shopkeeper"],NoAI:1b,Silent:1b,Invulnerable:1b}`,
-				`summon item_display ${shop.position.x} ${shop.position.y + 1} ${shop.position.z} {Tags:["${this.namespace}"],Passengers:[{id:"minecraft:chest_minecart",Tags:["${this.namespace}"],Silent:1b,Invulnerable:1b,CustomName:'${this.shops[shop.shopId]?.name ?? "Shop"}',DisplayState:{Name:"minecraft:barrier"}}]}`,
+				`summon item_display ${shop.position.x} ${shop.position.y + 1} ${shop.position.z} {Tags:["${this.namespace}"],Passengers:[{id:"minecraft:chest_minecart",Tags:["${this.namespace}"],Silent:1b,Invulnerable:1b,CustomName:'${this.shops[shop.shop]?.name ?? "Shop"}',DisplayState:{Name:"minecraft:barrier"}}]}`,
 			]),
 		];
 	}
