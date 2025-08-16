@@ -1,8 +1,8 @@
 import path from "path";
 import * as fs from "fs";
-import BedwarsPlugin from "../../BedwarsPlugin.js";
-import type { Generator, Shopkeeper, Shop } from "./types.js";
-import { log, secondsToTicks } from "../../utils/index.js";
+import BedwarsPlugin from "../../BedwarsPlugin";
+import type { Generator, Shopkeeper, Shop } from "./types";
+import { log, secondsToTicks } from "../../utils";
 
 export default class BedwarsCore extends BedwarsPlugin {
   private generators: Generator[] = [];

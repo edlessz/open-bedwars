@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
-import { log } from "./utils/index.js";
-import type BedwarsPlugin from "./BedwarsPlugin.js";
+import { log } from "./utils";
+import type BedwarsPlugin from "./BedwarsPlugin";
 
 export class BedwarsDatapack {
   public readonly namespace: string;

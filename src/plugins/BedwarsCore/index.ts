@@ -1,2 +1,2 @@
-export { default } from './BedwarsCore.js';
-export * from './types.js';
+export { default } from "./BedwarsCore";
+export * from "./types";

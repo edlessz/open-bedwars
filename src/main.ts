@@ -1,6 +1,6 @@
-import { BedwarsDatapack } from "./BedwarsDatapack.js";
+import { BedwarsDatapack } from "./BedwarsDatapack";
 import * as fs from "fs";
-import BedwarsCore from "./plugins/BedwarsCore/index.js";
+import BedwarsCore from "./plugins/BedwarsCore";
 
 // Delete existing datapack directory if it exists
 const datapackPath = `C:/Users/ebles/AppData/Roaming/.minecraft/saves/test/datapacks/edwars2`;
