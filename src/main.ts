@@ -4,8 +4,7 @@ import BedwarsCore from "./plugins/BedwarsCore";
 
 // Delete existing datapack directory if it exists
 const datapackPath = `C:/Users/ebles/AppData/Roaming/.minecraft/saves/test/datapacks/edwars2`;
-if (fs.existsSync(datapackPath))
-	fs.rmdirSync(datapackPath, { recursive: true });
+if (fs.existsSync(datapackPath)) fs.rmSync(datapackPath, { recursive: true });
 
 // Create and build the datapack
 const namespace = datapackPath.split("/").at(-1);

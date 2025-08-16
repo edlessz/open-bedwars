@@ -107,7 +107,7 @@ export class BedwarsDatapack {
 
 		if (results.some((result) => !result)) {
 			log("Some plugins failed to build, aborting datapack build", "❌");
-			fs.rmdirSync(datapackPath, { recursive: true });
+			fs.rmSync(datapackPath, { recursive: true });
 			return;
 		} else {
 			log(`Datapack ${this.namespace} built successfully`, "✅");
