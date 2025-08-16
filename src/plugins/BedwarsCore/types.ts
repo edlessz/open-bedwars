@@ -20,5 +20,5 @@ export interface Item {
 	id: string;
 	Count: number;
 	Slot: number;
-	[key: string]: any; // Allow additional properties
+	[key: string]: unknown; // Allow additional properties
 }

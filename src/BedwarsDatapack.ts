@@ -1,5 +1,5 @@
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import type BedwarsPlugin from "./BedwarsPlugin";
 import { log } from "./utils";
 
@@ -14,9 +14,9 @@ export class BedwarsDatapack {
 
 	private plugins: BedwarsPlugin[] = [];
 	public usePlugin<T extends BedwarsPlugin>(
-		PluginCtor: new (...args: any[]) => T,
+		PluginCtor: new (namespace: string) => T,
 	): T {
-		const plugin = new PluginCtor(this.namespace); // adjust args here
+		const plugin = new PluginCtor(this.namespace);
 		this.plugins.push(plugin);
 		return plugin;
 	}

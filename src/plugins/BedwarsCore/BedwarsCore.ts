@@ -1,5 +1,5 @@
-import * as fs from "fs";
-import path from "path";
+import * as fs from "node:fs";
+import path from "node:path";
 import BedwarsPlugin from "../../BedwarsPlugin";
 import { log, secondsToTicks } from "../../utils";
 import type { Generator, Shop, Shopkeeper } from "./types";
@@ -49,7 +49,7 @@ export default class BedwarsCore extends BedwarsPlugin {
 			);
 			log(`Wrote shops.json`, "✏️");
 			return true;
-		} catch (error) {
+		} catch {
 			return false;
 		}
 	}
@@ -58,7 +58,7 @@ export default class BedwarsCore extends BedwarsPlugin {
 		return [
 			`scoreboard objectives add ${this.namespace}_generators dummy`,
 			...this.generators.map(
-				(g, i) => `scoreboard players set ${i} ${this.namespace}_generators 0`,
+				(_, i) => `scoreboard players set ${i} ${this.namespace}_generators 0`,
 			),
 			...this.shopkeepers.flatMap((shop) => [
 				`summon villager ${shop.position.x} ${shop.position.y} ${shop.position.z} {Tags:["${this.namespace}"],NoAI:1b,Silent:1b,Invulnerable:1b}`,

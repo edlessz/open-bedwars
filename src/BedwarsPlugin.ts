@@ -9,6 +9,7 @@ export default abstract class BedwarsPlugin {
 		return [];
 	}
 	public onBuild(datapackPath: string): boolean {
+		void datapackPath;
 		return true;
 	}
 
