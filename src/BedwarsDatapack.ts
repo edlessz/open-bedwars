@@ -83,6 +83,14 @@ export class BedwarsDatapack {
 			);
 			log(`Wrote ${event}.mcfunction`, "✏️");
 		});
+		fs.writeFileSync(
+			path.join(dpFunctionsPath, "reload.mcfunction"),
+			[
+				`function ${this.namespace}:unload`,
+				`function ${this.namespace}:load`,
+			].join("\n"),
+		);
+		log(`Wrote reload.mcfunction`, "✏️");
 		//#endregion
 
 		//#region Build plugins
