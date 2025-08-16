@@ -1,8 +1,6 @@
 import * as crypto from "node:crypto";
-import * as fs from "node:fs";
-import path from "node:path";
 import BedwarsPlugin from "../../BedwarsPlugin";
-import { getPosition, log, secondsToTicks } from "../../utils";
+import { getPosition, secondsToTicks } from "../../utils";
 import type { Generator, Shop, ShopId, Shopkeeper } from "./types";
 
 export default class BedwarsCore extends BedwarsPlugin {
@@ -23,44 +21,12 @@ export default class BedwarsCore extends BedwarsPlugin {
 		return shopId;
 	}
 
-	public onBuild(datapackPath: string): boolean {
-		try {
-			const storagePath = path.join(
-				datapackPath,
-				"data",
-				this.namespace,
-				"storage",
-			);
-			fs.mkdirSync(storagePath, { recursive: true });
-			fs.writeFileSync(
-				path.join(storagePath, "shops.json"),
-				JSON.stringify(
-					Object.entries(this.shops).reduce(
-						(acc, [key, val]) => {
-							acc[key] = val.items.map((item) => ({
-								...item,
-								Slot: `${item.Slot}b`,
-								Count: `${item.Count}b`,
-							}));
-							return acc;
-						},
-						{} as Record<string, object[]>,
-					),
-				),
-			);
-			log(`Wrote shops.json`, "✏️");
-			return true;
-		} catch {
-			return false;
-		}
-	}
-
 	public onLoad(): string[] {
 		return [
 			`scoreboard objectives add ${this.namespace}_generators dummy`,
-			...this.generators.map(
-				(_, i) => `scoreboard players set ${i} ${this.namespace}_generators 0`,
-			),
+			...this.generators.flatMap((_, i) => [
+				`scoreboard players set ${i} ${this.namespace}_generators 0`,
+			]),
 			...this.shopkeepers.flatMap((shop) => [
 				`summon villager ${getPosition(shop.position)} {Tags:["${this.namespace}","${this.namespace}_shopkeeper"],NoAI:1b,Silent:1b,Invulnerable:1b}`,
 				`summon item_display ${shop.position.x} ${shop.position.y + 1} ${shop.position.z} {Tags:["${this.namespace}"],Passengers:[{id:"minecraft:chest_minecart",Tags:["${this.namespace}"],Silent:1b,Invulnerable:1b,CustomName:'${this.shops[shop.shop]?.name ?? "Shop"}',DisplayState:{Name:"minecraft:barrier"}}]}`,
