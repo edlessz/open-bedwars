@@ -1,4 +1,6 @@
 {
+  "name": "open-bedwars",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "npx nodemon"
