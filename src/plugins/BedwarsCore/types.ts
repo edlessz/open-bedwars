@@ -18,7 +18,7 @@ export interface Shop {
 
 export interface Item {
 	id: string;
-	Count: number;
+	count: number;
 	Slot: number;
 	[key: string]: unknown; // Allow additional properties
 }
