@@ -1,12 +1,13 @@
 {
   "name": "open-bedwars",
   "private": true,
-  "type": "module",
   "scripts": {
+    "build": "node build.js",
     "dev": "npx nodemon"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
+    "esbuild": "^0.25.9",
     "nodemon": "^3.1.10",
     "typescript": "^5.9.2"
   }
