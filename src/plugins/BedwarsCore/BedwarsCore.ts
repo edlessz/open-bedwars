@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import path from "node:path";
 import BedwarsPlugin from "../../BedwarsPlugin";
-import { log, secondsToTicks } from "../../utils";
+import { getPosition, log, secondsToTicks } from "../../utils";
 import type { Generator, Shop, Shopkeeper } from "./types";
 
 export default class BedwarsCore extends BedwarsPlugin {
@@ -61,10 +61,8 @@ export default class BedwarsCore extends BedwarsPlugin {
 				(_, i) => `scoreboard players set ${i} ${this.namespace}_generators 0`,
 			),
 			...this.shopkeepers.flatMap((shop) => [
-				`summon villager ${shop.position.x} ${shop.position.y} ${shop.position.z} {Tags:["${this.namespace}"],NoAI:1b,Silent:1b,Invulnerable:1b}`,
-				`setblock ${shop.position.x} ${shop.position.y} ${
-					shop.position.z
-				} chest{CustomName:'${this.shops[shop.shopId]?.name ?? "Shop"}'}`,
+				`summon villager ${getPosition(shop.position)} {Tags:["${this.namespace}","${this.namespace}_shopkeeper"],NoAI:1b,Silent:1b,Invulnerable:1b}`,
+				`summon item_display ${shop.position.x} ${shop.position.y + 1} ${shop.position.z} {Tags:["${this.namespace}"],Passengers:[{id:"minecraft:chest_minecart",Tags:["${this.namespace}"],Silent:1b,Invulnerable:1b,CustomName:'${this.shops[shop.shopId]?.name ?? "Shop"}',DisplayState:{Name:"minecraft:barrier"}}]}`,
 			]),
 		];
 	}
@@ -80,14 +78,14 @@ export default class BedwarsCore extends BedwarsPlugin {
 					this.namespace
 				}_generators matches ${secondsToTicks(
 					g.delaySeconds,
-				)}.. run summon item ${g.position.x} ${g.position.y} ${
-					g.position.z
-				} {Tags:["${this.namespace}"],Item:{id:"${g.item}"}}`,
+				)}.. run summon item ${getPosition(g.position)} {Tags:["${this.namespace}"],Item:{id:"${g.item}"}}`,
 				`execute if score ${i} ${
 					this.namespace
 				}_generators matches ${secondsToTicks(
 					g.delaySeconds,
 				)}.. run scoreboard players reset ${i} ${this.namespace}_generators`,
+				`# Shopkeepers`,
+				`execute as @e[tag=${this.namespace}_shopkeeper] at @s run tp @s ~ ~ ~ facing entity @p`,
 			]),
 		];
 	}

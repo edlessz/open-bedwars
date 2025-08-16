@@ -21,7 +21,7 @@ if (namespace) {
 
 	core.addGenerator({
 		item: "minecraft:gold_block",
-		position: { x: 224, y: -60, z: 10 },
+		position: { x: 241, y: -60, z: 16 },
 		delaySeconds: 1,
 	});
 
