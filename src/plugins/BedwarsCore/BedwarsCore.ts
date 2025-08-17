@@ -29,14 +29,16 @@ export default class BedwarsCore extends BedwarsPlugin {
 
 	public onBuild(datapackPath: string): boolean {
 		try {
+			const currencyScoreboard = `${this.namespace}_currency`;
+
 			fs.writeFileSync(
 				`${datapackPath}/data/${this.namespace}/function/purchase.mcfunction`,
 				[
-					"$execute store result score @s ui if items entity @s container.* $(price_id)",
-					"$execute if score @s ui matches $(price_count).. run give @s $(reward_id) $(reward_count)",
-					'$execute if score @s ui matches $(price_count).. run tellraw @s {"text":"Purchased $(reward_count) $(reward_name)!","color":"green"}',
-					'$execute unless score @s ui matches $(price_count).. run tellraw @s {"text":"Not enough $(price_name)!","color":"red"}',
-					"$execute if score @s ui matches $(price_count).. run clear @s $(price_id) $(price_count)",
+					`$execute store result score @s ${currencyScoreboard} if items entity @s container.* $(price_id)`,
+					`$execute if score @s ${currencyScoreboard} matches $(price_count).. run give @s $(reward_id) $(reward_count)`,
+					`$execute if score @s ${currencyScoreboard} matches $(price_count).. run tellraw @s {"text":"Purchased $(reward_count) $(reward_name)!","color":"green"}`,
+					`$execute unless score @s ${currencyScoreboard} matches $(price_count).. run tellraw @s {"text":"Not enough $(price_name)!","color":"red"}`,
+					`$execute if score @s ${currencyScoreboard} matches $(price_count).. run clear @s $(price_id) $(price_count)"`,
 				].join("\n"),
 			);
 			log("Wrote purchase.mcfunction", "✏️");
@@ -49,6 +51,7 @@ export default class BedwarsCore extends BedwarsPlugin {
 	public onLoad(): string[] {
 		return [
 			`scoreboard objectives add ${this.namespace}_generators dummy`,
+			`scoreboard objectives add ${this.namespace}_currency dummy`,
 			...this.generators.flatMap((_, i) => [
 				`scoreboard players set ${i} ${this.namespace}_generators 0`,
 			]),
@@ -83,7 +86,10 @@ export default class BedwarsCore extends BedwarsPlugin {
 		];
 	}
 	public onUnload(): string[] {
-		return [`scoreboard objectives remove ${this.namespace}_generators`];
+		return [
+			`scoreboard objectives remove ${this.namespace}_generators`,
+			`scoreboard objectives remove ${this.namespace}_currency`,
+		];
 	}
 	public onTick(): string[] {
 		return [
