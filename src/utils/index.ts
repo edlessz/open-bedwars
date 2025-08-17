@@ -24,3 +24,7 @@ export const snbt = (obj: unknown): string => {
 		throw new Error(`Unsupported type: ${typeof obj}`);
 	}
 };
+
+export const execute = (predicate: string, commands: string[]): string[] => {
+	return commands.map((c) => `execute ${predicate} run ${c}`);
+};

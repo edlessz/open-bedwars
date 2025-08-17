@@ -1,6 +1,6 @@
 import BedwarsPlugin from "../../BedwarsPlugin";
-import { getPosition, secondsToTicks, snbt } from "../../utils";
-import type { Generator, Shop, ShopId, Shopkeeper } from "./types";
+import { execute, getPosition, secondsToTicks, snbt } from "../../utils";
+import type { Generator, Item, Shop, ShopId, Shopkeeper } from "./types";
 
 export default class BedwarsCore extends BedwarsPlugin {
 	private generators: Generator[] = [];
@@ -17,8 +17,11 @@ export default class BedwarsCore extends BedwarsPlugin {
 	public addShop(shop: Shop): ShopId {
 		const shopId = Object.keys(this.shops).length.toString();
 		this.shops[shopId] = shop;
+		this.purchasableItems.push(...shop.items);
 		return shopId;
 	}
+
+	public purchasableItems: Item[] = [];
 
 	public onLoad(): string[] {
 		return [
@@ -70,6 +73,12 @@ export default class BedwarsCore extends BedwarsPlugin {
 					`execute as @e[tag=${this.namespace}_shopId_${shopId}] run data modify entity @s Items set from storage ${this.namespace}:shops ${shopId}`,
 				]),
 				`# Check for Purchases`,
+				...this.purchasableItems.flatMap((item) =>
+					execute(
+						`as @a if entity @s[nbt={Inventory:[{id:"${item.id}",tag:{${this.namespace}_shop_item: 1b}}]}]`,
+						[`give @s ${item.id} ${item.count}`],
+					),
+				),
 				`execute as @a run clear @s *[custom_data={${this.namespace}_shop_item: 1b}]`,
 			]),
 		];

@@ -14,19 +14,26 @@ if (namespace) {
 	const core = datapack.usePlugin(BedwarsCore);
 
 	const testShop = core.addShop({
-		items: [{ Slot: 0, id: "minecraft:stone", count: 64 }],
+		items: [
+			{
+				Slot: 0,
+				id: "minecraft:stone",
+				count: 64,
+				price: [{ id: "minecraft:iron_ingot", count: 1 }],
+			},
+		],
 		name: "Test Shop 2",
-	});
-
-	core.addGenerator({
-		item: "minecraft:gold_block",
-		position: { x: 241, y: -60, z: 16 },
-		delaySeconds: 1,
 	});
 
 	core.addShopkeeper({
 		shop: testShop,
 		position: { x: 241, y: -60, z: 10 },
+	});
+
+	core.addGenerator({
+		item: "minecraft:diamond_block",
+		position: { x: 241, y: -60, z: 16 },
+		delaySeconds: 1,
 	});
 
 	datapack.build(datapackPath.split("/").slice(0, -1).join("/"));
