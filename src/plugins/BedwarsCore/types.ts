@@ -1,19 +1,27 @@
 import type { Vector3 } from "../../types";
 
+export interface BedwarsCoreConfiguration {
+	generators: Generator[];
+	currencies: Currency[];
+	shops: Shop[];
+}
+
 export interface Generator {
 	item: string;
 	position: Vector3;
 	delaySeconds: number;
 }
 
-export interface Shopkeeper {
-	shop: ShopId;
-	position: Vector3;
+export interface Currency {
+	id: string;
+	name: string;
+	color: string;
 }
 
 export interface Shop {
 	items: ShopItem[];
 	name: string;
+	shopkeepers: Shopkeeper[];
 }
 
 export interface Item {
@@ -26,4 +34,6 @@ export interface ShopItem extends Item {
 	price: Item;
 }
 
-export type ShopId = string;
+export interface Shopkeeper {
+	position: Vector3;
+}

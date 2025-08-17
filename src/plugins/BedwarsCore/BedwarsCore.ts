@@ -1,39 +1,31 @@
 import * as fs from "node:fs";
 import BedwarsPlugin from "../../BedwarsPlugin";
 import { getPosition, log, secondsToTicks, snbt } from "../../utils";
-import type { Generator, Shop, ShopId, ShopItem, Shopkeeper } from "./types";
+import type {
+	BedwarsCoreConfiguration,
+	Currency,
+	Generator,
+	Shop,
+	ShopItem,
+} from "./types";
 
 export default class BedwarsCore extends BedwarsPlugin {
-	private currencies: Record<
-		string,
-		{
-			name: string;
-			color: string;
-		}
-	> = {};
-	public registerCurrency(id: string, name: string, color: string) {
-		this.currencies[id] = { name, color };
-	}
-
+	private currencies: Record<string, Currency> = {};
 	private generators: Generator[] = [];
-	public addGenerator(generator: Generator) {
-		this.generators.push(generator);
+	private shops: Shop[] = [];
+	private purchasableItems: ShopItem[] = [];
+	public configure(configuration: BedwarsCoreConfiguration): void {
+		this.currencies = configuration.currencies.reduce(
+			(acc, currency) => {
+				acc[currency.id] = currency;
+				return acc;
+			},
+			{} as Record<string, Currency>,
+		);
+		this.generators = configuration.generators;
+		this.shops = configuration.shops;
+		this.purchasableItems = this.shops.flatMap((shop) => shop.items);
 	}
-
-	private shopkeepers: Shopkeeper[] = [];
-	public addShopkeeper(shopkeeper: Shopkeeper) {
-		this.shopkeepers.push(shopkeeper);
-	}
-
-	private shops: Record<ShopId, Shop> = {};
-	public addShop(shop: Shop): ShopId {
-		const shopId = Object.keys(this.shops).length.toString();
-		this.shops[shopId] = shop;
-		this.purchasableItems.push(...shop.items);
-		return shopId;
-	}
-
-	public purchasableItems: ShopItem[] = [];
 
 	public onBuild(datapackPath: string): boolean {
 		try {
@@ -60,10 +52,12 @@ export default class BedwarsCore extends BedwarsPlugin {
 			...this.generators.flatMap((_, i) => [
 				`scoreboard players set ${i} ${this.namespace}_generators 0`,
 			]),
-			...this.shopkeepers.flatMap((shop, i) => [
-				`summon villager ${getPosition(shop.position)} {Tags:["${this.namespace}","${this.namespace}_shopkeeper","${this.namespace}_shopkeeper_${i}"],NoAI:1b,Silent:1b,Invulnerable:1b}`,
-				`summon item_display ${shop.position.x} ${shop.position.y + 1} ${shop.position.z} {Tags:["${this.namespace}"],Passengers:[{id:"minecraft:chest_minecart",Tags:["${this.namespace}", "${this.namespace}_shop", "${this.namespace}_shop_${i}", "${this.namespace}_shopId_${shop.shop}"],Passengers:[{id:marker,Tags:[${this.namespace},${this.namespace}_shopkeeper_${i}]}],Silent:1b,Invulnerable:1b,CustomName:'${this.shops[shop.shop]?.name ?? "Shop"}',DisplayState:{Name:"minecraft:barrier"}}]}`,
-			]),
+			...this.shops.flatMap((shop) =>
+				shop.shopkeepers.flatMap((sk) => [
+					`summon villager ${getPosition(sk.position)} {Tags:["${this.namespace}","${this.namespace}_shopkeeper"],NoAI:1b,Silent:1b,Invulnerable:1b}`,
+					`summon item_display ${sk.position.x} ${sk.position.y + 1} ${sk.position.z} {Tags:["${this.namespace}"],Passengers:[{id:"minecraft:chest_minecart",Tags:["${this.namespace}", "${this.namespace}_shop", "${this.namespace}_shopId_${sk.position}"],Passengers:[{id:marker,Tags:[${this.namespace}]}],Silent:1b,Invulnerable:1b,CustomName:'${shop?.name ?? "Shop"}',DisplayState:{Name:"minecraft:barrier"}}]}`,
+				]),
+			),
 			...Object.entries(this.shops).flatMap(([shopId, shop]) => [
 				`data modify storage ${this.namespace}:shops ${shopId} set value ${snbt(
 					shop.items.map((item) => ({
