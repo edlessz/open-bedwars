@@ -12,15 +12,18 @@ export interface Shopkeeper {
 }
 
 export interface Shop {
-	items: Item[];
+	items: ShopItem[];
 	name: string;
 }
 
 export interface Item {
 	id: string;
 	count: number;
+}
+export interface ShopItem extends Item {
+	name: string;
 	Slot: number;
-	[key: string]: unknown; // Allow additional properties
+	price: Item;
 }
 
 export type ShopId = string;

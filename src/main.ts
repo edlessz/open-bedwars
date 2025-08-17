@@ -12,14 +12,19 @@ if (namespace) {
 	const datapack = new BedwarsDatapack("Edwars v2.0", namespace);
 
 	const core = datapack.usePlugin(BedwarsCore);
+	core.registerCurrency("minecraft:iron_ingot", "Iron", "gray");
+	core.registerCurrency("minecraft:gold_ingot", "Gold", "yellow");
+	core.registerCurrency("minecraft:diamond", "Diamonds", "aqua");
+	core.registerCurrency("minecraft:emerald", "Emeralds", "green");
 
 	const testShop = core.addShop({
 		items: [
 			{
-				Slot: 0,
-				id: "minecraft:stone",
-				count: 64,
-				price: [{ id: "minecraft:iron_ingot", count: 1 }],
+				Slot: 13,
+				id: "minecraft:diamond_sword",
+				name: "Diamond Sword",
+				count: 1,
+				price: { id: "minecraft:emerald", count: 4 },
 			},
 		],
 		name: "Test Shop 2",
@@ -31,9 +36,9 @@ if (namespace) {
 	});
 
 	core.addGenerator({
-		item: "minecraft:diamond_block",
+		item: "minecraft:emerald",
 		position: { x: 241, y: -60, z: 16 },
-		delaySeconds: 1,
+		delaySeconds: 5,
 	});
 
 	datapack.build(datapackPath.split("/").slice(0, -1).join("/"));

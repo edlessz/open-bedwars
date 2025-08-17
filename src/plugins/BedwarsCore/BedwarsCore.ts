@@ -1,8 +1,20 @@
+import * as fs from "node:fs";
 import BedwarsPlugin from "../../BedwarsPlugin";
-import { execute, getPosition, secondsToTicks, snbt } from "../../utils";
-import type { Generator, Item, Shop, ShopId, Shopkeeper } from "./types";
+import { getPosition, log, secondsToTicks, snbt } from "../../utils";
+import type { Generator, Shop, ShopId, ShopItem, Shopkeeper } from "./types";
 
 export default class BedwarsCore extends BedwarsPlugin {
+	private currencies: Record<
+		string,
+		{
+			name: string;
+			color: string;
+		}
+	> = {};
+	public registerCurrency(id: string, name: string, color: string) {
+		this.currencies[id] = { name, color };
+	}
+
 	private generators: Generator[] = [];
 	public addGenerator(generator: Generator) {
 		this.generators.push(generator);
@@ -21,7 +33,26 @@ export default class BedwarsCore extends BedwarsPlugin {
 		return shopId;
 	}
 
-	public purchasableItems: Item[] = [];
+	public purchasableItems: ShopItem[] = [];
+
+	public onBuild(datapackPath: string): boolean {
+		try {
+			fs.writeFileSync(
+				`${datapackPath}/data/${this.namespace}/function/purchase.mcfunction`,
+				[
+					"$execute store result score @s ui if items entity @s container.* $(price_id)",
+					"$execute if score @s ui matches $(price_count).. run give @s $(reward_id) $(reward_count)",
+					'$execute if score @s ui matches $(price_count).. run tellraw @s {"text":"Purchased $(reward_count) $(reward_name)!","color":"green"}',
+					'$execute unless score @s ui matches $(price_count).. run tellraw @s {"text":"Not enough $(price_name)!","color":"red"}',
+					"$execute if score @s ui matches $(price_count).. run clear @s $(price_id) $(price_count)",
+				].join("\n"),
+			);
+			log("Wrote purchase.mcfunction", "✏️");
+			return true;
+		} catch {
+			return false;
+		}
+	}
 
 	public onLoad(): string[] {
 		return [
@@ -42,6 +73,15 @@ export default class BedwarsCore extends BedwarsPlugin {
 								[`${this.namespace}_shop_item`]: 1,
 							},
 							Tags: [`${this.namespace}`],
+							item_name: { bold: true, text: item.name },
+							lore: [
+								{
+									text: `${item.price?.count} ${this.currencies[item.price?.id ?? ""]?.name || item.price?.id}`,
+									italic: false,
+									color:
+										this.currencies[item.price?.id ?? ""]?.color || "white",
+								},
+							],
 						},
 					})),
 				)}`,
@@ -73,12 +113,10 @@ export default class BedwarsCore extends BedwarsPlugin {
 					`execute as @e[tag=${this.namespace}_shopId_${shopId}] run data modify entity @s Items set from storage ${this.namespace}:shops ${shopId}`,
 				]),
 				`# Check for Purchases`,
-				...this.purchasableItems.flatMap((item) =>
-					execute(
-						`as @a if entity @s[nbt={Inventory:[{id:"${item.id}",tag:{${this.namespace}_shop_item: 1b}}]}]`,
-						[`give @s ${item.id} ${item.count}`],
-					),
-				),
+				...this.purchasableItems.flatMap((item) => [
+					`execute as @a if items entity @s player.cursor ${item.id}[count=${item.count},custom_data={${this.namespace}_shop_item:1b}] run function ${this.namespace}:purchase {reward_id: "${item.id}", reward_count: ${item.count}, reward_name: "${item.name}", price_id: "${item.price?.id}", price_count: ${item.price?.count}, price_name: "${this.currencies[item.price?.id ?? ""]?.name || item.price?.id}"}`,
+					`execute as @a if items entity @s container.* ${item.id}[count=${item.count},custom_data={${this.namespace}_shop_item:1b}] run function ${this.namespace}:purchase {reward_id: "${item.id}", reward_count: ${item.count}, reward_name: "${item.name}", price_id: "${item.price?.id}", price_count: ${item.price?.count}, price_name: "${this.currencies[item.price?.id ?? ""]?.name || item.price?.id}"}`,
+				]),
 				`execute as @a run clear @s *[custom_data={${this.namespace}_shop_item: 1b}]`,
 			]),
 		];
