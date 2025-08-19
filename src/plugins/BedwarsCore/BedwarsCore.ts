@@ -38,7 +38,7 @@ export default class BedwarsCore extends BedwarsPlugin {
 					`$execute if score @s ${currencyScoreboard} matches $(price_count).. run give @s $(reward_id) $(reward_count)`,
 					`$execute if score @s ${currencyScoreboard} matches $(price_count).. run tellraw @s {"text":"Purchased $(reward_count) $(reward_name)!","color":"green"}`,
 					`$execute unless score @s ${currencyScoreboard} matches $(price_count).. run tellraw @s {"text":"Not enough $(price_name)!","color":"red"}`,
-					`$execute if score @s ${currencyScoreboard} matches $(price_count).. run clear @s $(price_id) $(price_count)"`,
+					`$execute if score @s ${currencyScoreboard} matches $(price_count).. run clear @s $(price_id) $(price_count)`,
 				].join("\n"),
 			);
 			log("Wrote purchase.mcfunction", "✏️");
@@ -49,17 +49,21 @@ export default class BedwarsCore extends BedwarsPlugin {
 	}
 
 	public onLoad(): string[] {
+		let shopkeeperIndex = -1;
 		return [
 			`scoreboard objectives add ${this.namespace}_generators dummy`,
 			`scoreboard objectives add ${this.namespace}_currency dummy`,
 			...this.generators.flatMap((_, i) => [
 				`scoreboard players set ${i} ${this.namespace}_generators 0`,
 			]),
-			...this.shops.flatMap((shop) =>
-				shop.shopkeepers.flatMap((sk) => [
-					`summon villager ${getPosition(sk.position)} {Tags:["${this.namespace}","${this.namespace}_shopkeeper"],NoAI:1b,Silent:1b,Invulnerable:1b}`,
-					`summon item_display ${sk.position.x} ${sk.position.y + 1} ${sk.position.z} {Tags:["${this.namespace}"],Passengers:[{id:"minecraft:chest_minecart",Tags:["${this.namespace}", "${this.namespace}_shop", "${this.namespace}_shopId_${sk.position}"],Passengers:[{id:marker,Tags:[${this.namespace}]}],Silent:1b,Invulnerable:1b,CustomName:'${shop?.name ?? "Shop"}',DisplayState:{Name:"minecraft:barrier"}}]}`,
-				]),
+			...this.shops.flatMap((shop, shopIndex) =>
+				shop.shopkeepers.flatMap((sk) => {
+					shopkeeperIndex++;
+					return [
+						`summon villager ${getPosition(sk.position)} {Tags:["${this.namespace}","${this.namespace}_shopkeeper"],NoAI:1b,Silent:1b,Invulnerable:1b}`,
+						`summon item_display ${sk.position.x} ${sk.position.y + 1} ${sk.position.z} {Tags:["${this.namespace}"],Passengers:[{id:"minecraft:chest_minecart",Tags:["${this.namespace}", "${this.namespace}_shop", "${this.namespace}_shop_${shopIndex}"],Passengers:[{id:marker,Tags:[${this.namespace}]}],Silent:1b,Invulnerable:1b,CustomName:'${shop?.name ?? "Shop"}',DisplayState:{Name:"minecraft:barrier"}}]}`,
+					];
+				}),
 			),
 			...Object.entries(this.shops).flatMap(([shopId, shop]) => [
 				`data modify storage ${this.namespace}:shops ${shopId} set value ${snbt(
@@ -109,8 +113,8 @@ export default class BedwarsCore extends BedwarsPlugin {
 				`# Shopkeepers`,
 				`execute as @e[tag=${this.namespace}_shopkeeper] at @s run tp @s ~ ~ ~ facing entity @p`,
 				`# Set shops`,
-				...Object.entries(this.shops).flatMap(([shopId, _]) => [
-					`execute as @e[tag=${this.namespace}_shopId_${shopId}] run data modify entity @s Items set from storage ${this.namespace}:shops ${shopId}`,
+				...Object.entries(this.shops).flatMap(([shopId, _], shopIndex) => [
+					`execute as @e[tag=${this.namespace}_shop_${shopIndex}] run data modify entity @s Items set from storage ${this.namespace}:shops ${shopId}`,
 				]),
 				`# Check for Purchases`,
 				...this.purchasableItems.flatMap((item) => [

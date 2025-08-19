@@ -24,7 +24,7 @@ core.configure({
 	],
 	generators: [
 		{
-			item: "minecraft:iron_ingot",
+			item: "minecraft:emerald",
 			position: { x: 241, y: -60, z: 16 },
 			delaySeconds: 5,
 		},
