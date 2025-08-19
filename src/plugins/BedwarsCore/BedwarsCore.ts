@@ -56,12 +56,12 @@ export default class BedwarsCore extends BedwarsPlugin {
 			...this.generators.flatMap((_, i) => [
 				`scoreboard players set ${i} ${this.namespace}_generators 0`,
 			]),
-			...this.shops.flatMap((shop, shopIndex) =>
+			...this.shops.flatMap((shop) =>
 				shop.shopkeepers.flatMap((sk) => {
-					shopkeeperIndex++;
+					shopkeeperIndex += 1;
 					return [
 						`summon villager ${getPosition(sk.position)} {Tags:["${this.namespace}","${this.namespace}_shopkeeper"],NoAI:1b,Silent:1b,Invulnerable:1b}`,
-						`summon item_display ${sk.position.x} ${sk.position.y + 1} ${sk.position.z} {Tags:["${this.namespace}"],Passengers:[{id:"minecraft:chest_minecart",Tags:["${this.namespace}", "${this.namespace}_shop", "${this.namespace}_shop_${shopIndex}"],Passengers:[{id:marker,Tags:[${this.namespace}]}],Silent:1b,Invulnerable:1b,CustomName:'${shop?.name ?? "Shop"}',DisplayState:{Name:"minecraft:barrier"}}]}`,
+						`summon item_display ${sk.position.x} ${sk.position.y + 1} ${sk.position.z} {Tags:["${this.namespace}"],Passengers:[{id:"minecraft:chest_minecart",Tags:["${this.namespace}", "${this.namespace}_shop", "${this.namespace}_shop_${shopkeeperIndex}"],Passengers:[{id:marker,Tags:[${this.namespace}]}],Silent:1b,Invulnerable:1b,CustomName:'${shop?.name ?? "Shop"}',DisplayState:{Name:"minecraft:barrier"}}]}`,
 					];
 				}),
 			),
